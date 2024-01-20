@@ -1,4 +1,4 @@
-from flask import current_app as app, jsonify, request
+from flask import current_app as app, jsonify, request, render_template
 from flask_security import auth_required, roles_required
 from .models import User, db
 from .sec import datastore
@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash
 
 @app.get('/')
 def home():
-    return "project start"
+    return render_template("index.html")
 
 
 @app.get('/admin')
