@@ -2,6 +2,7 @@ export default {
     template: `
     <div class="d-flex justify-content-center" style="margin-top: 25vh">
         <div class="mb-3 p-5 bg-light">
+            <div class='text-danger' v-if=error> *{{error}}* </div>
             <label for="user-email" class="form-label">Email address</label>
             <input type="email" class="form-control" id="user-email" aria-describedby="emailHelp" placeholder="name@example.com"
             v-model="cred.email">
@@ -20,6 +21,7 @@ export default {
                 "email": null,
                 "password": null,
             },
+            error: null,
         }
     },
     methods: {
@@ -31,12 +33,15 @@ export default {
                 },
                 body: JSON.stringify(this.cred),
             })
+            const data = await res.json()
             if (res.ok) {
-                const data = await res.json()
                 if (data.token) {
                     localStorage.setItem('auth-token', data.token)
                     this.$router.push({path: '/', query: {role: data.role}})
                 }
+            }
+            else {
+                this.error = data.message
             }
         }
     }

@@ -4,8 +4,8 @@ import Login from "./components/Login.js"
 
 // routes are array of paths
 const routes = [
-    { path: '/', component: Home },
-    { path: '/login', component: Login }
+    { path: '/', component: Home, name: 'Home' },
+    { path: '/login', component: Login, name: 'Login' }
 ]
 
 // Exporting VueRouter instance, pass routes to it
