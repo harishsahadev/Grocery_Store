@@ -13,7 +13,7 @@ export default {
 
     data() {
         return {
-            userRole: this.$route.query.role,
+            userRole: localStorage.getItem('role'),
         }
     },
 

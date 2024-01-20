@@ -37,7 +37,9 @@ export default {
             if (res.ok) {
                 if (data.token) {
                     localStorage.setItem('auth-token', data.token)
-                    this.$router.push({path: '/', query: {role: data.role}})
+                    localStorage.setItem('role', data.role)
+                    // this.$router.push({path: '/', query: {role: data.role}})
+                    this.$router.push({path: '/'})
                 }
             }
             else {
