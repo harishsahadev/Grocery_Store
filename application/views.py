@@ -1,6 +1,8 @@
-from flask import current_app as app, jsonify
+from flask import current_app as app, jsonify, request
 from flask_security import auth_required, roles_required
 from .models import User, db
+from .sec import datastore
+from werkzeug.security import check_password_hash
 
 
 @app.get('/')
@@ -26,3 +28,21 @@ def manager_activation(manager_id):
     manager.active = True
     db.session.commit()
     return jsonify({"message": "User Activated"})
+
+
+@app.post('/user-login')
+def user_login():
+    data = request.get_json()
+    email = data.get('email')
+    if not email:
+        return jsonify({"message": 'email not provided'}), 400
+    
+    user = datastore.find_user(email=email)
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    if check_password_hash(user.password, data.get("password")):
+        return jsonify({"token": user.get_auth_token(), "username": user.username,  "email": user.email, "role": user.roles[0].name})
+    else:
+        return jsonify({"message": "Incorrect credentials"}), 400
