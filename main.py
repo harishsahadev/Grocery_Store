@@ -15,10 +15,10 @@ def create_app():
     app.security = Security(app, datastore)
     with app.app_context():
         import application.views
-        
+
     return app, datastore
 
-app = create_app()
+app, datastore = create_app()
 
 if __name__ == "__main__":
     app.run(debug=True)
