@@ -1,4 +1,5 @@
 from flask_restful import Resource, Api, reqparse, fields, marshal_with
+from flask_security import auth_required, roles_required, roles_accepted, current_user
 from .models import Category, db
 
 api = Api(prefix='/api')
@@ -18,6 +19,7 @@ category_fields = {
 
 
 class CategorySection(Resource):
+    @auth_required('token')
     @marshal_with(category_fields)
     def get(self):
         all_categories = Category.query.all()
@@ -25,9 +27,12 @@ class CategorySection(Resource):
             return {"message": "No categories found"}, 404  # won't return message because of marshal_with
         return all_categories
     
+    @auth_required('token')
+    # @roles_required(['admin', 'manager'])
+    @roles_accepted('admin', 'manager')
     def post(self):
         args = parser.parse_args()
-        category = Category(**args)
+        category = Category(creator_id=current_user.id, name=args.get('name'), description=args.get('description'))
         db.session.add(category)
         db.session.commit()
         return {"message": "Category added successfully"}

@@ -20,6 +20,7 @@ class User(db.Model, UserMixin):
     role_id = db.Column(db.String, db.ForeignKey('role.id'))
     roles = db.relationship('Role', secondary='roles_users',
                          backref=db.backref('users', lazy='dynamic'))
+    category_section = db.relationship('Category', backref='creator')
 
 class Role(db.Model, RoleMixin):
     __tablename__ = "role"
@@ -33,6 +34,7 @@ class Category(db.Model):
     name = db.Column(db.String(80), nullable=False)
     description = db.Column(db.String(255))
     is_approved = db.Column(db.Boolean(), default=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class Product(db.Model):
     __tablename__ = 'product'
