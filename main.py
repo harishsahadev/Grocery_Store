@@ -2,7 +2,7 @@ from flask import Flask
 from flask_security import Security, SQLAlchemyUserDatastore
 from application.models import db, User, Role
 from config import DevelopmentConfig
-from application.api import api
+from application.resources import api
 from application.sec import datastore
 
 

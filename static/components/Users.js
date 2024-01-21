@@ -3,6 +3,7 @@ export default {
         <div v-if="error">{{error}}</div>
         <div v-for="(user, index) in allUsers">
         {{user.email}}
+        <button class="btn btn-success btn-sm" v-if="!user.active" @click="approve(user.id)"> Approve </button></div>
         </div>
     </div>`,
     data(){
@@ -12,19 +13,19 @@ export default {
             error: null,
         }
     },
-    // methods: {
-    //     async approve(istId){
-    //         const res = await fetch(`/activate/inst/${istId}`, {
-    //             headers: {
-    //                 'Authentication-Token': this.token,
-    //             },
-    //         })
-    //         const data = await res.json()
-    //         if (res.ok) {
-    //             alert (data.message)
-    //         }
-    //     }
-    // },
+    methods: {
+        async approve(custId){
+            const res = await fetch(`/activate/manager/${custId}`, {
+                headers: {
+                    'Authentication-Token': this.token,
+                },
+            })
+            const data = await res.json()
+            if (res.ok) {
+                alert (data.message)
+            }
+        }
+    },
     async mounted(){
         const res = await fetch('/users', {
             headers: {
