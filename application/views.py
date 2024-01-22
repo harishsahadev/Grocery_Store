@@ -1,7 +1,7 @@
 from flask import current_app as app, jsonify, request, render_template
 from flask_security import auth_required, roles_required
 from flask_restful import marshal, fields
-from .models import User, db
+from .models import User, db, Category
 from .sec import datastore
 from werkzeug.security import check_password_hash
 
@@ -64,3 +64,16 @@ def all_users():
     if len(users) == 0:
         return jsonify({"message": "No users found"}), 404
     return marshal(users, user_fields), 200
+
+
+@app.get('/category/<int:id>/approve>')
+@auth_required('token')
+@roles_required('admin')
+def category(id):
+    category = Category.query.get(id)
+    if not category:
+        return jsonify({"message": "Category not found"}), 404
+    
+    category.is_approved = True
+    db.session.commit()
+    return jsonify({"message": "Category approved"}), 200

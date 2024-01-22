@@ -18,7 +18,7 @@ class Creator(fields.Raw):
 
 
 category_fields = {
-    # 'id': fields.Integer,
+    'id': fields.Integer,
     'name': fields.String,
     'description': fields.String,
     'is_approved': fields.Boolean,
