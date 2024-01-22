@@ -2,3 +2,5 @@
 /__pycache__
 /application/__pycache__
 /instance
+dump.rdb
+test.csv

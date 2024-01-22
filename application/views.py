@@ -1,10 +1,12 @@
-from flask import current_app as app, jsonify, request, render_template
+from flask import current_app as app, jsonify, request, render_template, send_file
 from flask_security import auth_required, roles_required
 from flask_restful import marshal, fields
 from .models import User, db, Category
 from .sec import datastore
 from werkzeug.security import check_password_hash
-
+import flask_excel as excel
+from celery.result import AsyncResult
+from .tasks import create_category_csv
 
 @app.get('/')
 def home():
@@ -77,3 +79,19 @@ def category(id):
     category.is_approved = True
     db.session.commit()
     return jsonify({"message": "Category approved"}), 200
+
+
+@app.get('/download-csv')
+def download_csv():
+    task = create_category_csv.delay()
+    return jsonify({"task_id": task.id}), 200
+
+@app.get('/get-csv/<task_id>')
+def get_csv(task_id):
+    # AsyncResult(task_id) is a celery function to get the result of a task asynchronously
+    task = AsyncResult(task_id)
+
+    if task.ready():
+        return send_file(task.result, as_attachment=True)
+    else:
+        return jsonify({"message": "Task Pending"}), 404
