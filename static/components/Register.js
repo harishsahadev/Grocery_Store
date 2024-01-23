@@ -28,7 +28,13 @@ export default {
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-primary mt-2" @click="register">Submit</button>
+            <div class="mb-3">
+                <p><a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" href="/#/login">Existing user? Login</a></p>
+            </div>
+
+            <div class="d-grid gap-2 col-6 mx-auto">    
+                <button type="button" class="btn btn-primary mt-2" @click="register">Submit</button>
+            </div>
         </div>
     </div>
     </div>`,

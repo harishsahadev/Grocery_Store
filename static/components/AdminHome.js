@@ -1,9 +1,15 @@
 export default {
     template: `
     <div>
-        <h2>Welcome Admin</h2>
-        <button @click="downloadCategory" class="btn btn-secondary btn-sm"> Download Category </button>
-        <span v-if="isWaiting"> Waiting.. </span>
+        <div class="mb-3">
+            <h2>Welcome Admin</h2>
+        </div>
+        <div class="mb-3">
+            <button @click="downloadCategory" class="btn btn-secondary btn-sm"> Download Category </button>
+            <div class="spinner-border spinner-border-sm" role="status" v-if="isWaiting">
+                <span class="visually-hidden" >Loading...</span>
+            </div>
+        </div>
     </div>`,
 
     data() {

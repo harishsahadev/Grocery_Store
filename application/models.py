@@ -18,9 +18,9 @@ class User(db.Model, UserMixin):
     active = db.Column(db.Boolean())
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     role_id = db.Column(db.String, db.ForeignKey('role.id'))
-    roles = db.relationship('Role', secondary='roles_users',
-                         backref=db.backref('users', lazy='dynamic'))
+    roles = db.relationship('Role', secondary='roles_users', backref=db.backref('users', lazy='dynamic'))
     category_section = db.relationship('Category', backref='creator')
+    products_created = db.relationship('Product', backref='product_creator')
 
 class Role(db.Model, RoleMixin):
     __tablename__ = "role"
@@ -35,7 +35,7 @@ class Category(db.Model):
     description = db.Column(db.String(255))
     is_approved = db.Column(db.Boolean(), default=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    product = db.relationship('Product', backref='category', cascade="all,delete")
+    product = db.relationship('Product', backref='product_category', cascade="all,delete")
 
 class Product(db.Model):
     __tablename__ = 'product'
@@ -45,6 +45,7 @@ class Product(db.Model):
     cost = db.Column(db.Integer, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class Cart(db.Model):
     __tablename__ = 'cart'
