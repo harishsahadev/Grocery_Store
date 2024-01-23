@@ -19,7 +19,7 @@ with app.app_context():
 
     # Managers
     if not datastore.find_user(email="manager1@email.com"):
-        datastore.create_user(username="manager1", email="manager1@email.com", password=generate_password_hash("manager1"), roles=["manager"], active=False)
+        datastore.create_user(username="manager1", email="manager1@email.com", password=generate_password_hash("manager1"), roles=["manager"], active=True)
     if not datastore.find_user(email="manager2@email.com"):
         datastore.create_user(username="manager2", email="manager2@email.com", password=generate_password_hash("manager2"), roles=["manager"], active=False)
 

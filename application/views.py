@@ -3,7 +3,7 @@ from flask_security import auth_required, roles_required
 from flask_restful import marshal, fields
 from .models import User, db, Category
 from .sec import datastore
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 import flask_excel as excel
 from celery.result import AsyncResult
 from .tasks import create_category_csv
@@ -13,24 +13,45 @@ def home():
     return render_template("index.html")
 
 
-@app.get('/admin')
-@auth_required('token')
-@roles_required('admin')
-def admin():
-    return "Welcome Admin"
+# @app.get('/admin')
+# @auth_required('token')
+# @roles_required('admin')
+# def admin():
+#     return "Welcome Admin"
 
+@app.post('/user-register')
+def register():
+    data = request.get_json()
+    email = data.get('email')
+    username = data.get('username')
+    password = data.get('password')
+    role = data.get('role')
 
-@app.get('/activate/manager/<int:manager_id>')
-@auth_required('token')
-@roles_required('admin')
-def manager_activation(manager_id):
-    manager = User.query.get(manager_id)
-    if not manager:
-        return jsonify({"message": "Manager not found"}), 404
+    if not email:
+        return jsonify({"message": 'email not provided'}), 400
+    if not username:
+        return jsonify({"message": 'username not provided'}), 400
+    if not password:
+        return jsonify({"message": 'password not provided'}), 400
+    if not role:
+        return jsonify({"message": 'role not provided'}), 400
+    if role not in ['manager', 'customer']:
+        return jsonify({"message": "Invalid role"}), 400
     
-    manager.active = True
-    db.session.commit()
-    return jsonify({"message": "User Activated"})
+    user = datastore.find_user(email=email)
+    if user:
+        return jsonify({"message": "User already exists"}), 400
+    
+    if role == 'manager':
+        user = datastore.create_user(username=username, email=email, password=generate_password_hash(password), roles=[role], active=False)
+        db.session.commit()
+        return jsonify({"message": "User created successfully, pending admin approval"}), 201
+    
+    else:
+        user = datastore.create_user(username=username, email=email, password=generate_password_hash(password), roles=[role], active=True)
+        db.session.commit()
+        return jsonify({"message": "User created successfully"}), 201
+
 
 
 @app.post('/user-login')
@@ -49,7 +70,21 @@ def user_login():
         return jsonify({"token": user.get_auth_token(), "username": user.username,  "email": user.email, "role": user.roles[0].name})
     else:
         return jsonify({"message": "Incorrect credentials"}), 400
+
+
+@app.get('/activate/manager/<int:manager_id>')
+@auth_required('token')
+@roles_required('admin')
+def manager_activation(manager_id):
+    manager = User.query.get(manager_id)
+    if not manager:
+        return jsonify({"message": "Manager not found"}), 404
     
+    manager.active = True
+    db.session.commit()
+    return jsonify({"message": "User Activated"})
+
+
 
 user_fields = {
     'id': fields.Integer,

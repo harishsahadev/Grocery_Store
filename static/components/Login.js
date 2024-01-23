@@ -6,13 +6,12 @@ export default {
             <label for="user-email" class="form-label">Email address</label>
             <input type="email" class="form-control" id="user-email" aria-describedby="emailHelp" placeholder="name@example.com"
             v-model="cred.email">
-            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
 
             <label for="user-password" class="form-label">Password</label>
             <input type="password" class="form-control" id="user-password" v-model="cred.password">
 
             <button type="submit" class="btn btn-primary mt-2" @click="login">Submit</button>
-            </div>
+        </div>
     </div>
     `,
     data() {

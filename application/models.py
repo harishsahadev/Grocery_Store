@@ -31,17 +31,20 @@ class Role(db.Model, RoleMixin):
 class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(80), nullable=False, unique=True)
     description = db.Column(db.String(255))
     is_approved = db.Column(db.Boolean(), default=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product = db.relationship('Product', backref='category', cascade="all,delete")
 
 class Product(db.Model):
     __tablename__ = 'product'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String)
-    # category_id = db.Column(db.Integer, nullable=False)
+    cost = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
 
 class Cart(db.Model):
     __tablename__ = 'cart'
@@ -53,3 +56,6 @@ class Orders(db.Model):
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
