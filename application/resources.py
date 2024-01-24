@@ -166,19 +166,18 @@ class CartSection(Resource):
     @roles_required('customer')
     def post(self):
         args = cart_parser.parse_args()
-        # data = request.form.get("product_id")
-        # print(data)
-        print(args.get('product_id'))
 
         product = Product.query.filter(Product.id == args.get('product_id')).first()
-        # print(current_user.id, args.get('product_id'), args.get('quantity'))
-        # print(product)
+
         if not product:
             return {"message": "Product not found"}, 404    ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
         if product.quantity == 0:
             return {"message": "Product out of stock"}, 403  ## HTTP 403 Forbidden response status code indicates that the server understands the request but refuses to authorize it
         if product.quantity < args.get('quantity'):
             return {"message": "Available quanity is less than requested quantity"}, 409   ## HTTP 409 Conflict response status code indicates a request conflict with current state of the server
+        
+        product.quantity -= args.get('quantity')
+        db.session.commit()
 
         cart = Cart(user_id=current_user.id, product_id=args.get('product_id'), quantity=args.get('quantity'))
         db.session.add(cart)

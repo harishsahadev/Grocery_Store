@@ -7,6 +7,7 @@ import CategoryForm from "./components/CategoryForm.js"
 import ProductForm from "./components/ProductForm.js"
 import Product from "./components/Product.js"
 import ProductCategory from "./components/ProductCategory.js"
+import Cart from "./components/Cart.js"
 
 // routes are array of paths
 const routes = [
@@ -18,6 +19,7 @@ const routes = [
     { path: '/create-product', component: ProductForm, name: 'ProductForm'},
     { path: '/products', component: Product, name: 'Products' },
     { path: '/products/:cat_name', component: ProductCategory, name: 'ProductsCategory' },
+    { path: '/cart', component: Cart, name: 'Cart' },
 ]
 
 // Exporting VueRouter instance, pass routes to it

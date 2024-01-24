@@ -117,7 +117,7 @@ def category(id):
 
 
 product_fields = {
-    # 'id': fields.Integer,
+    'id': fields.Integer,
     'name': fields.String,
     'description': fields.String,
     'cost': fields.Integer,
