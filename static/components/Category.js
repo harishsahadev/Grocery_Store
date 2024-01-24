@@ -9,6 +9,7 @@ export default {
                 <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Description</th>
+                    <th scope="col">Products</th>
                     <th v-if="role=='admin'" scope="col" colspan="4">Created By</th>
                     
                 </tr>
@@ -17,6 +18,7 @@ export default {
             <tr v-for="category in categories">
                 <td>{{category.name}}</td>
                 <td>{{category.description}}</td>
+                <td><router-link :to="'/products/'+category.name">{{ category.name }} Products</router-link></td>
                 <td v-if="role=='admin'"><{{category.creator}}</td>
                 <td v-if="!category.is_approved && role!='admin'">Approval Pending</td>
                 <td><button class="btn btn-primary btn-sm" v-if="!category.is_approved && role=='admin'" @click="approveCategory(category.id)">Approve</button></td>
