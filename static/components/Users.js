@@ -6,6 +6,7 @@ export default {
         <button class="btn btn-success btn-sm" v-if="!user.active" @click="approve(user.id)"> Approve </button></div>
         </div>
     </div>`,
+
     data(){
         return {
             allUsers: [],
@@ -13,6 +14,7 @@ export default {
             error: null,
         }
     },
+    
     methods: {
         async approve(custId){
             const res = await fetch(`/activate/manager/${custId}`, {

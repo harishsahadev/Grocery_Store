@@ -1,7 +1,7 @@
 from flask import current_app as app, jsonify, request, render_template, send_file
-from flask_security import auth_required, roles_required
+from flask_security import auth_required, roles_required, roles_accepted
 from flask_restful import marshal, fields
-from .models import User, db, Category
+from .models import User, db, Category, Product
 from .sec import datastore
 from werkzeug.security import check_password_hash, generate_password_hash
 import flask_excel as excel
@@ -116,10 +116,61 @@ def category(id):
     return jsonify({"message": "Category approved"}), 200
 
 
+product_fields = {
+    # 'id': fields.Integer,
+    'name': fields.String,
+    'description': fields.String,
+    'cost': fields.Integer,
+    'quantity': fields.Integer,
+    # 'category': Product_category,
+    # 'creator': Creator,
+}
+
+
+
+###  Get all products by category name
+
+@app.get('/products/<cat_name>')
+@auth_required('token')
+def category_by_name(cat_name):
+    category = Category.query.filter(Category.name == cat_name).all()
+    print(category)
+    if not category:
+        return jsonify({"message": "Category not found"}), 404
+    
+    product = Product.query.filter(Product.category_id == category[0].id).all()
+    print(product)
+    if not product:
+        return jsonify({"message": "No products found"}), 404
+    
+    return marshal(product, product_fields), 200
+
+
+
+# Route to fetch and return approved categories for Product Form
+@app.route('/get_approved_categories', methods=['GET'])
+@auth_required('token')
+@roles_accepted('admin', 'manager')
+def get_approved_categories():
+    try:
+        # Fetch all names and ids of approved categories
+        approved_categories = Category.query.filter_by(is_approved=True).with_entities(Category.id, Category.name).all()
+
+        # Convert the result to a list of dictionaries for JSON serialization
+        categories_data = [{'id': category.id, 'name': category.name} for category in approved_categories]
+
+        return jsonify(categories_data), 200
+    except Exception as e:
+        return jsonify({'message': 'Something went wrong'}), 500
+
+
 @app.get('/download-csv')
 def download_csv():
     task = create_category_csv.delay()
     return jsonify({"task_id": task.id}), 200
+
+
+
 
 @app.get('/get-csv/<task_id>')
 def get_csv(task_id):

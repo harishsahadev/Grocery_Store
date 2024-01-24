@@ -2,6 +2,7 @@ from flask_restful import Resource, Api, reqparse, fields, marshal
 from flask_security import auth_required, roles_required, roles_accepted, current_user
 from sqlalchemy import or_
 from .models import Category, db, Product
+from flask import jsonify
 
 api = Api(prefix='/api')
 
@@ -33,6 +34,9 @@ class CategorySection(Resource):
             all_categories = Category.query.all() 
         else:
             all_categories = Category.query.filter(or_(Category.is_approved == True, Category.creator == current_user)).all()
+
+        if current_user.active == False:
+            return {"message": "Activation Pending"}, 403   ## HTTP 403 Forbidden response status code indicates that the server understands the request but refuses to authorize it
         
         if len(all_categories) == 0:
             return {"message": "No categories found"}, 404  ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
@@ -59,8 +63,8 @@ class CategorySection(Resource):
 
 # Custom field to return category name instead of user object
 class Product_category(fields.Raw):
-    def format(self, category):
-        return category.name
+    def format(self, user):
+        return user.name
 
 
 product_fields = {
@@ -69,7 +73,7 @@ product_fields = {
     'description': fields.String,
     'cost': fields.Integer,
     'quantity': fields.Integer,
-    # 'category': Product_category,
+    'category': Product_category,
     # 'creator': Creator,
 }
 
