@@ -1,8 +1,8 @@
 from flask_restful import Resource, Api, reqparse, fields, marshal
 from flask_security import auth_required, roles_required, roles_accepted, current_user
 from sqlalchemy import or_
-from .models import Category, db, Product
-from flask import jsonify
+from .models import Category, db, Product, Cart
+from flask import jsonify, request
 
 api = Api(prefix='/api')
 
@@ -121,7 +121,75 @@ class ProductSection(Resource):
         db.session.add(product)
         db.session.commit()
         return {"message": "Product added successfully"}
+    
+
+
+
+
+#-------------------------------CART SECTION---------------------------#
+
+
+
+# cart_fields = {
+#     # "user_id": fields.Integer,
+#     "product_id": fields.Integer,
+#     "quantity": fields.Integer,
+# }
+
+cart_parser = reqparse.RequestParser()
+cart_parser.add_argument('product_id', type=int, help='Product ID is required and should be an integer', required=True)
+cart_parser.add_argument('quantity', type=int, help='Quantity is required and should be an integer', required=True)
+
+
+class CartSection(Resource):
+
+    # Custom serialization function to return product name instead of product object
+    def serialize_cart_item(self, cart_item):
+        return {
+            'id': cart_item.id,
+            'quantity': cart_item.quantity,
+            'product_id': cart_item.product_id,
+            'product_name': cart_item.product.name if cart_item.product else None,
+        }
+
+    @auth_required('token')
+    @roles_required('customer')
+    def get(self):
+        cart_items = Cart.query.filter_by(user_id=current_user.id).all()
+        serialized_cart_items = [self.serialize_cart_item(item) for item in cart_items]
+        if len(cart_items) == 0:
+            return {"message": "Cart is empty"}, 404    ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
+        else:
+            return jsonify(serialized_cart_items)
+    
+    @auth_required('token')
+    @roles_required('customer')
+    def post(self):
+        args = cart_parser.parse_args()
+        # data = request.form.get("product_id")
+        # print(data)
+        print(args.get('product_id'))
+
+        product = Product.query.filter(Product.id == args.get('product_id')).first()
+        # print(current_user.id, args.get('product_id'), args.get('quantity'))
+        # print(product)
+        if not product:
+            return {"message": "Product not found"}, 404    ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
+        if product.quantity == 0:
+            return {"message": "Product out of stock"}, 403  ## HTTP 403 Forbidden response status code indicates that the server understands the request but refuses to authorize it
+        if product.quantity < args.get('quantity'):
+            return {"message": "Available quanity is less than requested quantity"}, 409   ## HTTP 409 Conflict response status code indicates a request conflict with current state of the server
+
+        cart = Cart(user_id=current_user.id, product_id=args.get('product_id'), quantity=args.get('quantity'))
+        db.session.add(cart)
+        db.session.commit()
+        return {"message": "Product added to cart successfully"}
+
+
+
+
 
 
 api.add_resource(CategorySection, '/category')
 api.add_resource(ProductSection, '/product')
+api.add_resource(CartSection, '/cart')

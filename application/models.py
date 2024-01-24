@@ -49,9 +49,14 @@ class Product(db.Model):
 
 class Cart(db.Model):
     __tablename__ = 'cart'
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    # Establishing a relationship with the User model
+    user = db.relationship('User', backref=db.backref('cart_items', lazy=True))
+    # Establishing a relationship with the Product model
+    product = db.relationship('Product', backref=db.backref('cart_items', lazy=True))
 
 class Orders(db.Model):
     __tablename__ = 'orders'
