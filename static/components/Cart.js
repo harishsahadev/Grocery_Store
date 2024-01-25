@@ -63,15 +63,17 @@ export default {
                                 <td>{{cart.product_cost}} ₹</td>
                                 <td>{{cart.quantity}}</td>
                                 <td>{{cart.quantity * cart.product_cost}} ₹</td>
+                            </tr>
+                            </tbody>
                         </table>
                         <div class="mb-3">
-                        <h4><strong>Grand Total:</strong> {{ totalCost }} ₹</h4>
+                            <h4><strong>Grand Total:</strong> {{ totalCost }} ₹</h4>
                         </div>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Go Back</button>
-                        <button type="button" class="btn btn-success">Buy Orders</button>
+                        <button type="button" class="btn btn-success" @click="buyOrders">Buy Orders</button>
                     </div>
                 </div>
             </div>
@@ -114,24 +116,27 @@ export default {
             else {
                 alert(data.message)
             }
+        },
+
+        async buyOrders() {
+            const res = await fetch('api/order', {
+                method: 'POST',
+                headers: {
+                    'Authentication-Token': this.token,
+                    'Content-Type': 'application/json',
+                },
+            })
+            const data = await res.json()
+            if (res.ok) {
+                alert(data.message)
+                this.$router.push('/order-summary')
+            }
+            else {
+                alert(data.message)
+            }
         }
     },
 
-    // calculateTotalCost() {
-    //     return this.carts.reduce(
-    //         (total, cart) => total + cart.quantity * cart.product_cost,
-    //       0
-    //     );
-    //   },
-        // calculateTotalCost() {
-        //     let total = 0;
-            
-        //     total = this.cart.reduce( (acc, item) => {
-        //         return acc + (item.quantity * item.product_cost)
-        //     }, 0)
-    
-        //     return total;
-        // },
 
 
     async mounted() {

@@ -7,9 +7,9 @@ export default {
 
         <div class='alert alert-danger' v-if=error> {{error}} </div>
 
-        <div class="col-md-11 text-end mb-3" >
+        <div class="col-md-11 text-end mb-3" v-if="userRole== 'customer'">
             <button type="button" class="btn btn-secondary ">
-                <router-link class="nav-link" to="/cart">Go to Cart</router-link>
+                <router-link class="nav-link" to="/cart" >Go to Cart</router-link>
             </button>
         </div>
 
@@ -22,8 +22,8 @@ export default {
                     <th scope="col">Category</th>
                     <th scope="col">Cost</th>
                     <th scope="col">Description</th>
-                    <th scope="col">Select Quantity</th>
-                    <th scope="col">Add to Cart</th>
+                    <th scope="col" v-if="userRole== 'customer'">Select Quantity</th>
+                    <th scope="col" v-if="userRole== 'customer'">Add to Cart</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,13 +32,17 @@ export default {
                 <td>{{category_name}}</td>
                 <td>{{product.cost}} ₹</td>
                 <td>{{product.description}}</td>
-                <td> 
+                <td v-if="userRole== 'customer'"> 
                     <div class="form-outline" style="width: 8rem;">
                         <input v-model="cart.quantity" min="0" :max="product.quantity" type="number" id="inputQuantity" class="form-control"/>
                         <label class="form-label" for="inputQuantity">Available: {{product.quantity}} </label>
                     </div>
                 </td>
-                <td><button class="btn btn-primary btn-sm" @click="addToCart(product.id)">Add to Cart</button></td>
+                <td v-if="userRole== 'customer'">
+                    <button class="btn btn-primary btn-sm" @click="addToCart(product.id)">
+                        Add to Cart
+                    </button>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -47,6 +51,7 @@ export default {
     data() {
         return {
             products: [],
+            userRole: localStorage.getItem('role'),
             token: localStorage.getItem('auth-token'),
             error: null,
             category_name: this.$route.params.cat_name,

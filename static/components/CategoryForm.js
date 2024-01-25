@@ -2,6 +2,7 @@ export default {
     template: `
     <div>
         <h3 class="form-label">Category Form</h3>
+        <div v-if="error">{{error}}</div>
         <div class="mb-3">
             <input v-model="category.name" type="text" placeholder="Category Name" class="form-control"/>
         </div>
@@ -19,6 +20,7 @@ export default {
                 description: null,
             },
             token: localStorage.getItem('auth-token'),
+            error: null,
         }
     },
 
@@ -34,8 +36,12 @@ export default {
             })
 
             const data = await res.json()
+            console.log(data)
             if (res.ok) {
                 alert(data.message)
+            }
+            else {
+                this.error = data.message
             }
         }
     }

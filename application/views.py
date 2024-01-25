@@ -1,7 +1,8 @@
 from flask import current_app as app, jsonify, request, render_template, send_file
 from flask_security import auth_required, roles_required, roles_accepted, current_user
 from flask_restful import marshal, fields
-from .models import User, db, Category, Product, Cart
+from sqlalchemy import desc, func
+from .models import Orders, User, db, Category, Product, Cart
 from .sec import datastore
 from werkzeug.security import check_password_hash, generate_password_hash
 import flask_excel as excel
@@ -177,6 +178,35 @@ def delete_cart(cart_id):
     db.session.commit()
     return jsonify({"message": "Cart item deleted"}), 200
 
+
+
+def serialize_order_item(order_item):
+    return {
+        'id': order_item.id,
+        'date': order_item.date.strftime('%Y-%m-%d %H:%M:%S IST'),
+        'user_id': order_item.user_id,
+        'product_id': order_item.product_id,
+        'product_name': order_item.product.name if order_item.product else None,
+        'product_cost': order_item.product.cost if order_item.product else None,
+        'category_name': order_item.product.product_category.name if order_item.product else None,
+        'quantity': order_item.quantity,
+        # 'group_id': order_item.group_id,
+    }
+
+
+@app.route('/order_summary')
+@auth_required('token')
+@roles_required('customer')
+def order_summary():
+    last_group = db.session.query(func.max(Orders.group_id)).scalar()
+
+    last_orders = Orders.query.filter_by(group_id=last_group).all()
+    if len(last_orders) == 0:
+        return jsonify({"message": "No orders found"}), 404
+    
+    serialized_orders = [serialize_order_item(item) for item in last_orders]
+
+    return jsonify(serialized_orders), 200
 
 
 

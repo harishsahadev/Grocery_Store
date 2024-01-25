@@ -55,9 +55,13 @@ class CategorySection(Resource):
     def post(self):
         args = parser.parse_args()
 
+        if current_user.active == False:
+            return {"message": "Activation Pending"}, 403
+
         category = Category.query.filter((Category.name == args.get('name'))).first()
         if category:
             return {"message": "Category already exists"}, 409  ## HTTP 409 Conflict response status code indicates a request conflict with current state of the server
+        
 
         category = Category(creator_id=current_user.id, name=args.get('name'), description=args.get('description'))
         db.session.add(category)
@@ -222,10 +226,15 @@ class OrderSection(Resource):
         if len(cart_items) == 0:
             return {"message": "Cart is empty"}, 404    ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
         
+        # Check if there are any orders in the database
         has_no_records = db.session.query(Orders).first() is None
         current_time = datetime.now(pytz.timezone('Asia/Kolkata'))
-        # formatted_datetime = current_time.strftime('%Y-%m-%d %H:%M:%S')
-        # print(formatted_datetime)
+        if has_no_records:
+            next_group_id = 1
+        else:
+            highest_group_id = db.session.query(func.max(Orders.group_id)).scalar()
+            next_group_id = highest_group_id + 1
+
 
         for item in cart_items:
             product = Product.query.filter(Product.id == item.product_id).first()
@@ -236,14 +245,7 @@ class OrderSection(Resource):
             if product.quantity < item.quantity:
                 return {"message": "Available quanity is less than requested quantity"}, 409   ## HTTP 409 Conflict response status code indicates a request conflict with current state of the server
             
-            if has_no_records:
-                order = Orders(date=current_time, user_id=current_user.id, product_id=item.product_id, quantity=item.quantity, group_id=1)
-                
-            else:
-                highest_group_id = db.session.query(func.max(Orders.group_id)).scalar()
-                next_group_id = highest_group_id + 1
-                # print(next_group_id)
-                order = Orders(date=current_time, user_id=current_user.id, product_id=item.product_id, quantity=item.quantity, group_id=next_group_id)
+            order = Orders(date=current_time, user_id=current_user.id, product_id=item.product_id, quantity=item.quantity, group_id=next_group_id)
 
             product.quantity -= item.quantity
             db.session.add(order)
@@ -255,7 +257,7 @@ class OrderSection(Resource):
     def serialize_order_item(self, order_item):
         return {
             'id': order_item.id,
-            'date': order_item.date,
+            'date': order_item.date.strftime('%Y-%m-%d %H:%M:%S IST'),
             'user_id': order_item.user_id,
             'product_id': order_item.product_id,
             'product_name': order_item.product.name if order_item.product else None,
