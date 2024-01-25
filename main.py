@@ -37,7 +37,7 @@ def send_email(sender, **kwargs):
 
     # Monthly report at 8:00 PM on 28th of every month
     sender.add_periodic_task(
-        # crontab(hour=20, minute=00, day_of_month=28),
+        # crontab(hour=20, minute=00, day_of_month=1),
         crontab(hour=h, minute=m),
         monthly_report.s(),
     )
