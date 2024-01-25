@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Reminder</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #3498db;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        footer {
+            margin-top: 50px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello {{ user.username }},</h1>
+    
+    <p>Thank you for choosing Grocery Store as your daily grocery partner!</p>
+
+    <p>Just a friendly reminder to check out the latest products available.</p>
+
+    <p>Have a wonderful day ahead!</p>
+
+    <footer>
+        <p>Regards, <strong>Grocery Store Team</strong></p>
+    </footer>
+</body>
+</html>

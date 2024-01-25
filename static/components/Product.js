@@ -21,6 +21,7 @@ export default {
                 <td>{{product.cost}} ₹</td>
                 <td>{{product.description}}</td>
                 <td>{{product.quantity}}</td>
+                
             </tr>
             </tbody>
         </table>

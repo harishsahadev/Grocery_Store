@@ -37,7 +37,7 @@ def create_product_csv():
 @shared_task(ignore_result=True)
 def monthly_report():
     users = User.query.filter(User.roles.any(Role.name == 'customer')).all()
-    print(users)
+    # print(users)
 
     current_time = date.now(pytz.timezone('Asia/Kolkata'))
     time_window = current_time - timedelta(days=30)
@@ -45,7 +45,7 @@ def monthly_report():
     for user in users:
 
         orders = Orders.query.filter((Orders.user_id==user.id) & (Orders.date >= time_window)).all()
-        print(orders)
+        # print(orders)
 
         # Calculate the grand total
         total_cost = sum(order.quantity * order.product.cost for order in orders)
@@ -54,7 +54,24 @@ def monthly_report():
         html_content = render_template('order_email_template.html', user=user, orders=orders, total_cost=total_cost)
 
         # Send email
-        send_message(user.email, 'Order Details', html_content)
+        send_message(user.email, 'Monthly Summary', html_content)
 
     return {"message": "Email sent successfully"}
 
+
+@shared_task(ignore_result=True)
+def daily_reminder():
+    users = User.query.filter(User.roles.any(Role.name == 'customer')).all()
+
+    current_time = date.now(pytz.timezone('Asia/Kolkata'))
+    time_window = current_time - timedelta(hours=2)
+
+    for user in users:
+        orders = Orders.query.filter((Orders.user_id==user.id) & (Orders.date >= time_window)).first()
+        
+        if not orders:
+            html_content = render_template('daily_reminder_template.html', user=user)
+
+        send_message(user.email, 'Daily Reminder', html_content)
+
+    return {"message": "Email sent successfully"}

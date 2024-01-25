@@ -169,7 +169,7 @@ def get_approved_categories():
 @auth_required('token')
 @roles_required('customer')
 def delete_cart(cart_id):
-    cart = Cart.query.get(cart_id)
+    # cart = Cart.query.get(cart_id)
     cart = Cart.query.filter((Cart.id==cart_id) & (Cart.user_id==current_user.id)).first()
     if not cart:
         return jsonify({"message": "Cart item not found"}), 404
@@ -177,6 +177,20 @@ def delete_cart(cart_id):
     db.session.delete(cart)
     db.session.commit()
     return jsonify({"message": "Cart item deleted"}), 200
+
+
+# @app.route('/delete_product/<int:product_id>')
+# @auth_required('token')
+# @roles_accepted('admin', 'manager')
+# def delete_product(product_id):
+#     # product = Product.query.get(product_id)
+#     product = Product.query.filter((Product.id==product_id) & (Product.creator_id==current_user.id)).first()
+#     if not product:
+#         return jsonify({"message": "Product not found"}), 404
+    
+#     db.session.delete(product)
+#     db.session.commit()
+#     return jsonify({"message": "Product deleted"}), 200
 
 
 
@@ -214,6 +228,7 @@ def order_summary():
 def download_csv():
     task = create_category_csv.delay()
     return jsonify({"task_id": task.id}), 200
+
 
 @app.get('/download-product-csv')
 def download_product_csv():

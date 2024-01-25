@@ -6,6 +6,7 @@ from flask import jsonify, request
 import math
 from datetime import datetime
 import pytz  # Import the pytz library for timezone calculations
+from .cached_instance import cache
 
 
 
@@ -34,6 +35,7 @@ category_fields = {
 
 class CategorySection(Resource):
     @auth_required('token')
+    @cache.cached(timeout=60)
     def get(self):
         if "admin" in current_user.roles:
             all_categories = Category.query.all() 

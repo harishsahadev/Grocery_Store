@@ -8,7 +8,7 @@ export default {
             </button>
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="is_login">
                         <router-link class="nav-link active" aria-current="page" to="/">Home/Categories</router-link>
                     </li>
                     <li class="nav-item" v-if="userRole=='admin'">

@@ -4,34 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly Order Details</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #3498db;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        strong {
+            color: #e74c3c;
+        }
+
+        footer {
+            margin-top: 50px;
+            color: #777;
+        }
+    </style>
 </head>
 <body>
     <h1>Hello {{ user.username }},</h1>
     
-    <p>Thank you for your recent orders. Here are the details:</p>
+    {% if orders %}
+        <p>Thank you for your recent orders. Here are the details of past month's orders:</p>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Product Name</th>
-                <th>Quantity</th>
-                <th>Total Cost</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ order.id }}</td>
-                    <td>{{ order.product_name }}</td>
-                    <td>{{ order.quantity }}</td>
-                    <td>{{ order.quantity * order.product.cost }}</td>
+                    <th>Order ID</th>
+                    <th>Product Name</th>
+                    <th>Product Cost</th>
+                    <th>Quantity</th>
+                    <th>Total Cost</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <p><strong>Grand Total:</strong> {{ total_cost }} ₹</p>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.product.name }}</td>
+                        <td>{{ order.product.cost }}</td>
+                        <td>{{ order.quantity }}</td>
+                        <td>{{ order.quantity * order.product.cost }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p><strong>Grand Total:</strong> {{ total_cost }} ₹</p>
+    {% else %}
+        <p>No orders found for this month. Do check out the site for latest products!</p>
+    {% endif %}
 
     <p>Thank you for choosing our service.</p>
+
+    <footer>
+        <p>Regards, <strong>Grocery Store Team</strong></p>
+    </footer>
 </body>
 </html>
