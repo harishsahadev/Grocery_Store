@@ -19,8 +19,8 @@ class User(db.Model, UserMixin):
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     role_id = db.Column(db.String, db.ForeignKey('role.id'))
     roles = db.relationship('Role', secondary='roles_users', backref=db.backref('users', lazy='dynamic'))
-    category_section = db.relationship('Category', backref='creator')
-    products_created = db.relationship('Product', backref='product_creator')
+    category_section = db.relationship('Category', backref='creator', cascade="all,delete")
+    products_created = db.relationship('Product', backref='product_creator', cascade="all,delete")
 
 class Role(db.Model, RoleMixin):
     __tablename__ = "role"
@@ -46,6 +46,8 @@ class Product(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    # cart = db.relationship('Cart', backref='product_cart', cascade="all,delete")
+    # orders = db.relationship('Orders', backref='product_orders', cascade="all,delete")
 
 class Cart(db.Model):
     __tablename__ = 'cart'
@@ -62,7 +64,11 @@ class Orders(db.Model):
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     group_id = db.Column(db.Integer, nullable=False)
+    # Establishing a relationship with the User model
+    user = db.relationship('User', backref=db.backref('order_items', lazy=True))
+    # Establishing a relationship with the Product model
+    product = db.relationship('Product', backref=db.backref('order_items', lazy=True))

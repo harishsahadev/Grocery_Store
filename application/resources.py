@@ -1,9 +1,13 @@
 from flask_restful import Resource, Api, reqparse, fields, marshal
 from flask_security import auth_required, roles_required, roles_accepted, current_user
-from sqlalchemy import or_
-from .models import Category, db, Product, Cart
+from sqlalchemy import desc, or_, func
+from .models import Category, db, Product, Cart, Orders
 from flask import jsonify, request
 import math
+from datetime import datetime
+import pytz  # Import the pytz library for timezone calculations
+
+
 
 api = Api(prefix='/api')
 
@@ -158,13 +162,15 @@ class CartSection(Resource):
     @roles_required('customer')
     def get(self):
         cart_items = Cart.query.filter_by(user_id=current_user.id).all()
-        serialized_cart_items = [self.serialize_cart_item(item) for item in cart_items]
 
-        print(serialized_cart_items)
         if len(cart_items) == 0:
             return {"message": "Cart is empty"}, 404    ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
-        else:
-            return jsonify(serialized_cart_items)
+        
+        serialized_cart_items = [self.serialize_cart_item(item) for item in cart_items]
+
+        # print(serialized_cart_items)
+        return jsonify(serialized_cart_items)
+        
     
     @auth_required('token')
     @roles_required('customer')
@@ -192,6 +198,84 @@ class CartSection(Resource):
         db.session.add(cart)
         db.session.commit()
         return {"message": "Product added to cart successfully"}
+    
+
+#-------------------------------ORDER SECTION---------------------------#
+    
+
+# order_fields = {
+#     'id': fields.Integer,
+#     'date': fields.DateTime(dt_format='iso8601'),
+#     'user_id': fields.Integer,
+#     'product_id': fields.Integer,
+#     'quantity': fields.Integer,
+#     # 'group_id': fields.Integer,
+# }
+
+
+    
+class OrderSection(Resource):
+    @auth_required('token')
+    @roles_required('customer')
+    def post(self):
+        cart_items = Cart.query.filter_by(user_id=current_user.id).all()
+        if len(cart_items) == 0:
+            return {"message": "Cart is empty"}, 404    ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
+        
+        has_no_records = db.session.query(Orders).first() is None
+        current_time = datetime.now(pytz.timezone('Asia/Kolkata'))
+        # formatted_datetime = current_time.strftime('%Y-%m-%d %H:%M:%S')
+        # print(formatted_datetime)
+
+        for item in cart_items:
+            product = Product.query.filter(Product.id == item.product_id).first()
+            if not product:
+                return {"message": "Product not found"}, 404
+            if product.quantity <= 0:
+                return {"message": "Product out of stock"}, 403
+            if product.quantity < item.quantity:
+                return {"message": "Available quanity is less than requested quantity"}, 409   ## HTTP 409 Conflict response status code indicates a request conflict with current state of the server
+            
+            if has_no_records:
+                order = Orders(date=current_time, user_id=current_user.id, product_id=item.product_id, quantity=item.quantity, group_id=1)
+                
+            else:
+                highest_group_id = db.session.query(func.max(Orders.group_id)).scalar()
+                next_group_id = highest_group_id + 1
+                # print(next_group_id)
+                order = Orders(date=current_time, user_id=current_user.id, product_id=item.product_id, quantity=item.quantity, group_id=next_group_id)
+
+            product.quantity -= item.quantity
+            db.session.add(order)
+            db.session.delete(item)
+            db.session.commit()
+            
+        return {"message": "Order placed successfully"}
+    
+    def serialize_order_item(self, order_item):
+        return {
+            'id': order_item.id,
+            'date': order_item.date,
+            'user_id': order_item.user_id,
+            'product_id': order_item.product_id,
+            'product_name': order_item.product.name if order_item.product else None,
+            'product_cost': order_item.product.cost if order_item.product else None,
+            'category_name': order_item.product.product_category.name if order_item.product else None,
+            'quantity': order_item.quantity,
+            # 'group_id': order_item.group_id,
+        }
+    
+
+    @auth_required('token')
+    @roles_required('customer')
+    def get(self):
+        orders = Orders.query.order_by(desc(Orders.group_id)).all()
+        if len(orders) == 0:
+            return {"message": "No orders found"}, 404
+        
+        serialized_orders = [self.serialize_order_item(item) for item in orders]
+
+        return jsonify(serialized_orders)
 
 
 
@@ -202,3 +286,4 @@ class CartSection(Resource):
 api.add_resource(CategorySection, '/category')
 api.add_resource(ProductSection, '/product')
 api.add_resource(CartSection, '/cart')
+api.add_resource(OrderSection, '/order')
