@@ -20,6 +20,12 @@ export default {
                     <li class="nav-item" v-if="userRole== 'manager'">
                         <router-link class="nav-link" to="/create-category">Create-Category</router-link>
                     </li>
+                    <li class="nav-item" v-if="userRole== 'manager'">
+                        <router-link class="nav-link" to="/create-product">Create-Product</router-link>
+                    </li>
+                    <li class="nav-item" v-if="userRole== 'admin'">
+                        <router-link class="nav-link" to="/create-product">Create-Product</router-link>
+                    </li>
                     <li class="nav-item" v-if="userRole== 'customer'">
                         <router-link class="nav-link" to="/orders">Orders</router-link>
                     </li>
