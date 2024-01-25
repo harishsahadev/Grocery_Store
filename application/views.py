@@ -1,7 +1,7 @@
 from flask import current_app as app, jsonify, request, render_template, send_file
-from flask_security import auth_required, roles_required, roles_accepted
+from flask_security import auth_required, roles_required, roles_accepted, current_user
 from flask_restful import marshal, fields
-from .models import User, db, Category, Product
+from .models import User, db, Category, Product, Cart
 from .sec import datastore
 from werkzeug.security import check_password_hash, generate_password_hash
 import flask_excel as excel
@@ -134,12 +134,12 @@ product_fields = {
 @auth_required('token')
 def category_by_name(cat_name):
     category = Category.query.filter(Category.name == cat_name).all()
-    print(category)
+    # print(category)
     if not category:
         return jsonify({"message": "Category not found"}), 404
     
     product = Product.query.filter(Product.category_id == category[0].id).all()
-    print(product)
+    # print(product)
     if not product:
         return jsonify({"message": "No products found"}), 404
     
@@ -162,6 +162,22 @@ def get_approved_categories():
         return jsonify(categories_data), 200
     except Exception as e:
         return jsonify({'message': 'Something went wrong'}), 500
+    
+
+@app.route('/delete_cart/<int:cart_id>')
+@auth_required('token')
+@roles_required('customer')
+def delete_cart(cart_id):
+    cart = Cart.query.get(cart_id)
+    cart = Cart.query.filter((Cart.id==cart_id) & (Cart.user_id==current_user.id)).first()
+    if not cart:
+        return jsonify({"message": "Cart item not found"}), 404
+    
+    db.session.delete(cart)
+    db.session.commit()
+    return jsonify({"message": "Cart item deleted"}), 200
+
+
 
 
 @app.get('/download-csv')

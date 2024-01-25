@@ -1,7 +1,18 @@
 export default {
     template: `
     <div>
-        <h3>Products of {{category_name}} category</h3>
+        <div class="mb-3">
+            <h3>Products of {{category_name}} category</h3>
+        </div>
+
+        <div class='alert alert-danger' v-if=error> {{error}} </div>
+
+        <div class="col-md-11 text-end mb-3" >
+            <button type="button" class="btn btn-secondary ">
+                <router-link class="nav-link" to="/cart">Go to Cart</router-link>
+            </button>
+        </div>
+
         <table class="table table-striped">
             <caption>Table represents all available products</caption>
 
@@ -16,10 +27,10 @@ export default {
                 </tr>
             </thead>
             <tbody>
-            <tr v-for="product in products">
+            <tr v-for="(product, index) in products">
                 <td>{{product.name}}</td>
                 <td>{{category_name}}</td>
-                <td>{{product.cost}}</td>
+                <td>{{product.cost}} ₹</td>
                 <td>{{product.description}}</td>
                 <td> 
                     <div class="form-outline" style="width: 8rem;">
@@ -66,7 +77,7 @@ export default {
             this.qty = data.quantity;
             this.products = data;
           } else {
-            this.error = res.status;
+            this.error = data.message
           }
         } catch (error) {
           console.error('Error fetching product data:', error);
@@ -94,10 +105,12 @@ export default {
                 this.$router.go(0)
             }
             else {
-                alert(data.message)
+                this.error = data.message
             }
         }
     }
+
+
 
     
 }

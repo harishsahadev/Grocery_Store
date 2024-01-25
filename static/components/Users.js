@@ -1,9 +1,11 @@
 export default {
-    template: `<div>
+    template: `
+    <div>
         <div v-if="error">{{error}}</div>
-        <div v-for="(user, index) in allUsers">
-        {{user.email}}
-        <button class="btn btn-success btn-sm" v-if="!user.active" @click="approve(user.id)"> Approve </button></div>
+            <div v-for="(user, index) in allUsers">
+                {{user.email}}
+                <button class="btn btn-success btn-sm" v-if="!user.active" @click="approve(user.id)"> Approve </button>
+            </div>
         </div>
     </div>`,
 
@@ -14,7 +16,7 @@ export default {
             error: null,
         }
     },
-    
+
     methods: {
         async approve(custId){
             const res = await fetch(`/activate/manager/${custId}`, {
@@ -25,6 +27,7 @@ export default {
             const data = await res.json()
             if (res.ok) {
                 alert (data.message)
+                this.$router.go(0)
             }
         }
     },

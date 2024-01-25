@@ -18,9 +18,12 @@ export default {
             <tr v-for="category in categories">
                 <td>{{category.name}}</td>
                 <td>{{category.description}}</td>
-                <td><router-link :to="'/products/'+category.name">{{ category.name }} Products</router-link></td>
+
+                <td><router-link class="icon-link icon-link-hover" style="--bs-link-hover-color-rgb: 25, 135, 84;" :to="'/products/'+category.name">{{ category.name }} Products</router-link></td>
+
                 <td v-if="role=='admin'"><{{category.creator}}</td>
                 <td v-if="!category.is_approved && role!='admin'">Approval Pending</td>
+
                 <td><button class="btn btn-primary btn-sm" v-if="!category.is_approved && role=='admin'" @click="approveCategory(category.id)">Approve</button></td>
             </tr>
             </tbody>

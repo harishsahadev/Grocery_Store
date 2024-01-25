@@ -65,3 +65,4 @@ class Orders(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    group_id = db.Column(db.Integer, nullable=False)

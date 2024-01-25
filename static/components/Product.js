@@ -18,7 +18,7 @@ export default {
             <tr v-for="product in products">
                 <td>{{product.name}}</td>
                 <td>{{product.category}}</td>
-                <td>{{product.cost}}</td>
+                <td>{{product.cost}} ₹</td>
                 <td>{{product.description}}</td>
                 <td>{{product.quantity}}</td>
             </tr>

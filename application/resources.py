@@ -3,6 +3,7 @@ from flask_security import auth_required, roles_required, roles_accepted, curren
 from sqlalchemy import or_
 from .models import Category, db, Product, Cart
 from flask import jsonify, request
+import math
 
 api = Api(prefix='/api')
 
@@ -150,6 +151,7 @@ class CartSection(Resource):
             'quantity': cart_item.quantity,
             'product_id': cart_item.product_id,
             'product_name': cart_item.product.name if cart_item.product else None,
+            'product_cost': cart_item.product.cost if cart_item.product else None,
         }
 
     @auth_required('token')
@@ -157,6 +159,8 @@ class CartSection(Resource):
     def get(self):
         cart_items = Cart.query.filter_by(user_id=current_user.id).all()
         serialized_cart_items = [self.serialize_cart_item(item) for item in cart_items]
+
+        print(serialized_cart_items)
         if len(cart_items) == 0:
             return {"message": "Cart is empty"}, 404    ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
         else:
@@ -167,22 +171,28 @@ class CartSection(Resource):
     def post(self):
         args = cart_parser.parse_args()
 
-        product = Product.query.filter(Product.id == args.get('product_id')).first()
+        quantity = math.floor(abs(args.get('quantity')))
 
+        product = Product.query.filter(Product.id == args.get('product_id')).first()
+        cart = Cart.query.filter((Cart.product_id == args.get('product_id')) & (Cart.user_id == current_user.id)).first()
+
+        if cart:
+            return {"message": "Product already in cart"}, 409   ## HTTP 409 Conflict response status code indicates a request conflict with current state of the server
         if not product:
             return {"message": "Product not found"}, 404    ## HTTP 404 Not Found client error response code indicates that the server can't find the requested resource
-        if product.quantity == 0:
+        if product.quantity <= 0:
             return {"message": "Product out of stock"}, 403  ## HTTP 403 Forbidden response status code indicates that the server understands the request but refuses to authorize it
-        if product.quantity < args.get('quantity'):
-            return {"message": "Available quanity is less than requested quantity"}, 409   ## HTTP 409 Conflict response status code indicates a request conflict with current state of the server
+        if product.quantity < quantity:
+            return {"message": "Available quanity is less than requested quantity"}, 409   ## HTTP 409 Conflict response status code indicates a request conflict with current state of the server        
         
-        product.quantity -= args.get('quantity')
-        db.session.commit()
+        # product.quantity -= quantity
+        # db.session.commit()
 
-        cart = Cart(user_id=current_user.id, product_id=args.get('product_id'), quantity=args.get('quantity'))
+        cart = Cart(user_id=current_user.id, product_id=args.get('product_id'), quantity=quantity)
         db.session.add(cart)
         db.session.commit()
         return {"message": "Product added to cart successfully"}
+
 
 
 

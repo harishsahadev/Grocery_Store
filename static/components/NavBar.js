@@ -23,11 +23,14 @@ export default {
                     <li class="nav-item">
                         <router-link class="nav-link" to="/products">Products</router-link>
                     </li>
-                    <li class="nav-item" v-if="is_login">
-                        <button class="nav-link" @click="logout">Logout</button>
+                    <li class="nav-item" v-if="userRole== 'customer'">
+                        <router-link class="nav-link" to="/cart">Cart</router-link>
                     </li>
                 </ul>
             </div>
+        </div>
+        <div class="nav-item mr-3 nav-link p-3">
+            <button type="button" class="btn btn-outline-danger" @click="logout">Logout</button>
         </div>
     </nav>
     `,
